@@ -28,9 +28,10 @@ class TransE(Model):
 		y = Variable(torch.Tensor([-1]))# .cuda()
 		a = self.config.tlmbda*(d_influ - self.config.enddate).float()
 		influ = torch.pow(math.exp(1),a)
+		# margin不参与时间影响
 		return self.criterion(influ*p_score, influ*n_score, y)
+		# margin参与时间的影响
 		# return self.criterion(influ*p_score, influ*n_score, influ*y)
-
 
 	def forward(self):
 		

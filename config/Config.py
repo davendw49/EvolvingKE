@@ -131,7 +131,7 @@ class Config(object):
         ###Evloving Parameter###
         ########################
         self.enddate = 280
-        self.tlmbda = 1
+        self.tlmbda = 0.1
 
     def init(self):
         self.lib.setInPath(

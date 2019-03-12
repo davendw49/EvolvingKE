@@ -22,11 +22,15 @@ con.set_checkpoint_dir("./checkpoint")
 con.set_result_dir("./result")
 con.set_test_link(True)
 con.set_test_quadruple(True)
+
 ########################
 ###Evloving Parameter###
 ########################
-# 时间指数变量值con.set_tlmbda(1)
-# 时间终止影响点con.set_enddate(280)
+# 时间指数变量值
+con.set_tlmbda(0.001)
+# 时间终止影响点
+con.set_enddate(280)
+
 con.init()
 con.set_train_model(TransE)
 con.train()
