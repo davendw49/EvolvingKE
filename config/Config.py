@@ -54,8 +54,10 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+            ctypes.c_void_p,
         ]
         self.lib.getTailBatch.argtypes = [
+            ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -68,6 +70,7 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -78,6 +81,7 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -155,9 +159,7 @@ class Config(object):
         self.batch_h = np.zeros(self.batch_seq_size, dtype=np.int64)
         self.batch_t = np.zeros(self.batch_seq_size, dtype=np.int64)
         self.batch_r = np.zeros(self.batch_seq_size, dtype=np.int64)
-
         self.batch_d = np.zeros(self.batch_seq_size, dtype=np.int64)
-        
         self.batch_y = np.zeros(self.batch_seq_size, dtype=np.float32)
         
         self.batch_h_addr = self.batch_h.__array_interface__["data"][0]
@@ -375,7 +377,6 @@ class Config(object):
             self.batch_h_addr,
             self.batch_t_addr,
             self.batch_r_addr,
-            
             self.batch_d_addr,
 
             self.batch_y_addr,
@@ -397,10 +398,8 @@ class Config(object):
     def train_one_step(self):
         self.trainModel.batch_h = to_var(self.batch_h)
         self.trainModel.batch_t = to_var(self.batch_t)
-        self.trainModel.batch_r = to_var(self.batch_r)
-        
+        self.trainModel.batch_r = to_var(self.batch_r)      
         self.trainModel.batch_d = to_var(self.batch_d)
-
         self.trainModel.batch_y = to_var(self.batch_y)
         self.optimizer.zero_grad()
         loss = self.trainModel()
@@ -519,10 +518,10 @@ class Config(object):
 
         )
         res_pos = self.test_one_step(
-            self.testModel, self.valid_pos_h, self.valid_pos_t, self.valid_pos_r
+            self.testModel, self.valid_pos_h, self.valid_pos_t, self.valid_pos_r, self.valid_pos_d
         )
         res_neg = self.test_one_step(
-            self.testModel, self.valid_neg_h, self.valid_neg_t, self.valid_neg_r
+            self.testModel, self.valid_neg_h, self.valid_neg_t, self.valid_neg_r, self.valid_neg_d
         )
         self.lib.getBestThreshold(
             self.relThresh_addr,
@@ -534,15 +533,18 @@ class Config(object):
             self.test_pos_h_addr,
             self.test_pos_t_addr,
             self.test_pos_r_addr,
+            self.test_pos_d_addr,
+
             self.test_neg_h_addr,
             self.test_neg_t_addr,
             self.test_neg_r_addr,
+            self.test_neg_d_addr,
         )
         res_pos = self.test_one_step(
-            self.testModel, self.test_pos_h, self.test_pos_t, self.test_pos_r
+            self.testModel, self.test_pos_h, self.test_pos_t, self.test_pos_r, self.test_pos_d
         )
         res_neg = self.test_one_step(
-            self.testModel, self.test_neg_h, self.test_neg_t, self.test_neg_r
+            self.testModel, self.test_neg_h, self.test_neg_t, self.test_neg_r, self.test_neg_d
         )
         self.lib.test_quadruple_classification(
             self.relThresh_addr,

@@ -4,6 +4,7 @@
 #include "Quadruple.h"
 #include "Reader.h"
 
+
 INT corrupt_head(INT id, INT h, INT r) {
 	INT lef, rig, mid, ll, rr;
 	lef = lefHead[h] - 1;
