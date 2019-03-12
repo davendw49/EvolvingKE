@@ -12,6 +12,8 @@ class Model(nn.Module):
 		self.batch_h = None
 		self.batch_t = None
 		self.batch_r = None
+		self.batch_d = None
+
 		self.batch_y = None
 	'''
 	def get_positive_instance(self):
@@ -26,6 +28,10 @@ class Model(nn.Module):
 		self.negative_r = self.batch_r[self.config.batch_size, self.config.batch_seq_size]
 		return self.negative_h, self.negative_t, self.negative_r
  	'''
+ 
+	def get_date_influence(self, d):
+		return d[0:self.config.batch_size]
+
 	def get_positive_score(self, score):
 		return score[0:self.config.batch_size]
 

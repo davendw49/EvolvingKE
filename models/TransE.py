@@ -6,12 +6,14 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 from .Model import Model
+import math
 
 class TransE(Model):
 	def __init__(self, config):
 		super(TransE, self).__init__(config)
 		self.ent_embeddings = nn.Embedding(self.config.entTotal, self.config.hidden_size)
 		self.rel_embeddings = nn.Embedding(self.config.relTotal, self.config.hidden_size)
+
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
 		
@@ -19,27 +21,39 @@ class TransE(Model):
 		nn.init.xavier_uniform_(self.ent_embeddings.weight.data)
 		nn.init.xavier_uniform_(self.rel_embeddings.weight.data)
 
-	def _calc(self, h, t, r, d):
+	def _calc(self, h, t, r):
 		return torch.norm(h + r - t, self.config.p_norm, -1)
 	
-	def loss(self, p_score, n_score):
+	def loss(self, p_score, n_score, d_influ):
 		y = Variable(torch.Tensor([-1]))# .cuda()
-		return self.criterion(p_score, n_score, y)
+		a = self.config.tlmbda*(d_influ - self.config.enddate).float()
+		influ = torch.pow(math.exp(1),a)
+		return self.criterion(influ*p_score, influ*n_score, y)
+		# return self.criterion(influ*p_score, influ*n_score, influ*y)
+
 
 	def forward(self):
+		
 		h = self.ent_embeddings(self.batch_h)
 		t = self.ent_embeddings(self.batch_t)
 		r = self.rel_embeddings(self.batch_r)
-
-		d = self.rel_embeddings(self.batch_d)
-
-		score = self._calc(h ,t, r, d)
+		d = self.batch_d
+		
+		score = self._calc(h ,t, r)
+		d_influ = self.get_date_influence(d)
 		p_score = self.get_positive_score(score)
 		n_score = self.get_negative_score(score)
-		return self.loss(p_score, n_score)	
+
+		f_score = self.loss(p_score, n_score, d_influ)
+		return f_score
 	def predict(self):
+		
 		h = self.ent_embeddings(self.batch_h)
 		t = self.ent_embeddings(self.batch_t)
 		r = self.rel_embeddings(self.batch_r)
+
+		d = self.batch_d
 		score = self._calc(h, t, r)
-		return score.cpu().data.numpy()	
+		return score.cpu().data.numpy()
+
+
