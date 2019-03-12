@@ -29,6 +29,7 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+            ctypes.c_void_p,
             ctypes.c_int64,
             ctypes.c_int64,
             ctypes.c_int64,
@@ -38,8 +39,10 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+            ctypes.c_void_p,
         ]
         self.lib.getValidTailBatch.argtypes = [
+            ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -59,8 +62,10 @@ class Config(object):
         ]
         self.lib.testHead.argtypes = [ctypes.c_void_p]
         self.lib.testTail.argtypes = [ctypes.c_void_p]
-        """test triple classification"""
+        """test quadruple classification"""
         self.lib.getValidBatch.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -75,13 +80,15 @@ class Config(object):
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_void_p,
         ]
         self.lib.getBestThreshold.argtypes = [
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
         ]
-        self.lib.test_triple_classification.argtypes = [
+        self.lib.test_quadruple_classification.argtypes = [
             ctypes.c_void_p,
             ctypes.c_void_p,
             ctypes.c_void_p,
@@ -111,11 +118,16 @@ class Config(object):
         self.nbatches = 100
         self.p_norm = 1
         self.test_link = True
-        self.test_triple = True
+        self.test_quadruple = True
         self.model = None
         self.trainModel = None
         self.testModel = None
         self.pretrain_model = None
+        ########################
+        ###Evloving Parameter###
+        ########################
+        self.enddate = 280
+        self.tlmbda = 1
 
     def init(self):
         self.lib.setInPath(
@@ -129,6 +141,9 @@ class Config(object):
         self.lib.importTypeFiles()
         self.relTotal = self.lib.getRelationTotal()
         self.entTotal = self.lib.getEntityTotal()
+
+        self.datTotal = self.lib.getDateTotal()
+        
         self.trainTotal = self.lib.getTrainTotal()
         self.testTotal = self.lib.getTestTotal()
         self.validTotal = self.lib.getValidTotal()
@@ -140,59 +155,85 @@ class Config(object):
         self.batch_h = np.zeros(self.batch_seq_size, dtype=np.int64)
         self.batch_t = np.zeros(self.batch_seq_size, dtype=np.int64)
         self.batch_r = np.zeros(self.batch_seq_size, dtype=np.int64)
+
+        self.batch_d = np.zeros(self.batch_seq_size, dtype=np.int64)
+        
         self.batch_y = np.zeros(self.batch_seq_size, dtype=np.float32)
+        
         self.batch_h_addr = self.batch_h.__array_interface__["data"][0]
         self.batch_t_addr = self.batch_t.__array_interface__["data"][0]
         self.batch_r_addr = self.batch_r.__array_interface__["data"][0]
+        self.batch_d_addr = self.batch_d.__array_interface__["data"][0]
         self.batch_y_addr = self.batch_y.__array_interface__["data"][0]
 
         self.valid_h = np.zeros(self.entTotal, dtype=np.int64)
         self.valid_t = np.zeros(self.entTotal, dtype=np.int64)
         self.valid_r = np.zeros(self.entTotal, dtype=np.int64)
+        self.valid_d = np.zeros(self.entTotal, dtype=np.int64)
+
         self.valid_h_addr = self.valid_h.__array_interface__["data"][0]
         self.valid_t_addr = self.valid_t.__array_interface__["data"][0]
         self.valid_r_addr = self.valid_r.__array_interface__["data"][0]
+        self.valid_d_addr = self.valid_d.__array_interface__["data"][0]
 
         self.test_h = np.zeros(self.entTotal, dtype=np.int64)
         self.test_t = np.zeros(self.entTotal, dtype=np.int64)
         self.test_r = np.zeros(self.entTotal, dtype=np.int64)
+        self.test_d = np.zeros(self.entTotal, dtype=np.int64)
+        
         self.test_h_addr = self.test_h.__array_interface__["data"][0]
         self.test_t_addr = self.test_t.__array_interface__["data"][0]
         self.test_r_addr = self.test_r.__array_interface__["data"][0]
+        self.test_d_addr = self.test_d.__array_interface__["data"][0]
 
         self.valid_pos_h = np.zeros(self.validTotal, dtype=np.int64)
         self.valid_pos_t = np.zeros(self.validTotal, dtype=np.int64)
         self.valid_pos_r = np.zeros(self.validTotal, dtype=np.int64)
+        self.valid_pos_d = np.zeros(self.validTotal, dtype=np.int64)
+
         self.valid_pos_h_addr = self.valid_pos_h.__array_interface__["data"][0]
         self.valid_pos_t_addr = self.valid_pos_t.__array_interface__["data"][0]
         self.valid_pos_r_addr = self.valid_pos_r.__array_interface__["data"][0]
+        self.valid_pos_d_addr = self.valid_pos_d.__array_interface__["data"][0]
+        
         self.valid_neg_h = np.zeros(self.validTotal, dtype=np.int64)
         self.valid_neg_t = np.zeros(self.validTotal, dtype=np.int64)
         self.valid_neg_r = np.zeros(self.validTotal, dtype=np.int64)
+        self.valid_neg_d = np.zeros(self.validTotal, dtype=np.int64)
+
         self.valid_neg_h_addr = self.valid_neg_h.__array_interface__["data"][0]
         self.valid_neg_t_addr = self.valid_neg_t.__array_interface__["data"][0]
         self.valid_neg_r_addr = self.valid_neg_r.__array_interface__["data"][0]
+        self.valid_neg_d_addr = self.valid_neg_d.__array_interface__["data"][0]
 
         self.test_pos_h = np.zeros(self.testTotal, dtype=np.int64)
         self.test_pos_t = np.zeros(self.testTotal, dtype=np.int64)
         self.test_pos_r = np.zeros(self.testTotal, dtype=np.int64)
+        self.test_pos_d = np.zeros(self.testTotal, dtype=np.int64)
+
         self.test_pos_h_addr = self.test_pos_h.__array_interface__["data"][0]
         self.test_pos_t_addr = self.test_pos_t.__array_interface__["data"][0]
         self.test_pos_r_addr = self.test_pos_r.__array_interface__["data"][0]
+        self.test_pos_d_addr = self.test_pos_d.__array_interface__["data"][0]
+        
         self.test_neg_h = np.zeros(self.testTotal, dtype=np.int64)
         self.test_neg_t = np.zeros(self.testTotal, dtype=np.int64)
         self.test_neg_r = np.zeros(self.testTotal, dtype=np.int64)
+        self.test_neg_d = np.zeros(self.testTotal, dtype=np.int64)
+        
         self.test_neg_h_addr = self.test_neg_h.__array_interface__["data"][0]
         self.test_neg_t_addr = self.test_neg_t.__array_interface__["data"][0]
         self.test_neg_r_addr = self.test_neg_r.__array_interface__["data"][0]
+        self.test_neg_d_addr = self.test_neg_d.__array_interface__["data"][0]
+
         self.relThresh = np.zeros(self.relTotal, dtype=np.float32)
         self.relThresh_addr = self.relThresh.__array_interface__["data"][0]
 
     def set_test_link(self, test_link):
         self.test_link = test_link
 
-    def set_test_triple(self, test_triple):
-        self.test_triple = test_triple
+    def set_test_quadruple(self, test_quadruple):
+        self.test_quadruple = test_quadruple
 
     def set_margin(self, margin):
         self.margin = margin
@@ -334,6 +375,9 @@ class Config(object):
             self.batch_h_addr,
             self.batch_t_addr,
             self.batch_r_addr,
+            
+            self.batch_d_addr,
+
             self.batch_y_addr,
             self.batch_size,
             self.negative_ent,
@@ -354,6 +398,9 @@ class Config(object):
         self.trainModel.batch_h = to_var(self.batch_h)
         self.trainModel.batch_t = to_var(self.batch_t)
         self.trainModel.batch_r = to_var(self.batch_r)
+        
+        self.trainModel.batch_d = to_var(self.batch_d)
+
         self.trainModel.batch_y = to_var(self.batch_y)
         self.optimizer.zero_grad()
         loss = self.trainModel()
@@ -361,10 +408,12 @@ class Config(object):
         self.optimizer.step()
         return loss.item()
 
-    def test_one_step(self, model, test_h, test_t, test_r):
+    def test_one_step(self, model, test_h, test_t, test_r, test_d):
         model.batch_h = to_var(test_h)
         model.batch_t = to_var(test_t)
         model.batch_r = to_var(test_r)
+        model.batch_d = to_var(test_d)
+
         return model.predict()
 
     def valid(self, model):
@@ -373,16 +422,16 @@ class Config(object):
             sys.stdout.write("%d\r" % (i))
             sys.stdout.flush()
             self.lib.getValidHeadBatch(
-                self.valid_h_addr, self.valid_t_addr, self.valid_r_addr
+                self.valid_h_addr, self.valid_t_addr, self.valid_r_addr, self.valid_d_addr
             )
-            res = self.test_one_step(model, self.valid_h, self.valid_t, self.valid_r)
+            res = self.test_one_step(model, self.valid_h, self.valid_t, self.valid_r, self.valid_d)
 
             self.lib.validHead(res.__array_interface__["data"][0])
 
             self.lib.getValidTailBatch(
-                self.valid_h_addr, self.valid_t_addr, self.valid_r_addr
+                self.valid_h_addr, self.valid_t_addr, self.valid_r_addr, self.valid_d_addr
             )
-            res = self.test_one_step(model, self.valid_h, self.valid_t, self.valid_r)
+            res = self.test_one_step(model, self.valid_h, self.valid_t, self.valid_r, self.valid_d)
             self.lib.validTail(res.__array_interface__["data"][0])
         return self.lib.getValidHit10()
 
@@ -439,31 +488,35 @@ class Config(object):
         return best_model
 
     def link_prediction(self):
-        print("The total of test triple is %d" % (self.testTotal))
+        print("The total of test quadruple is %d" % (self.testTotal))
         for i in range(self.testTotal):
             sys.stdout.write("%d\r" % (i))
             sys.stdout.flush()
-            self.lib.getHeadBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
+            self.lib.getHeadBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr, self.test_d_addr)
             res = self.test_one_step(
-                self.testModel, self.test_h, self.test_t, self.test_r
+                self.testModel, self.test_h, self.test_t, self.test_r, self.test_d
             )
             self.lib.testHead(res.__array_interface__["data"][0])
 
-            self.lib.getTailBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr)
+            self.lib.getTailBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr, self.test_d_addr)
             res = self.test_one_step(
-                self.testModel, self.test_h, self.test_t, self.test_r
+                self.testModel, self.test_h, self.test_t, self.test_r, self.test_d
             )
             self.lib.testTail(res.__array_interface__["data"][0])
         self.lib.test_link_prediction()
 
-    def triple_classification(self):
+    def quadruple_classification(self):
         self.lib.getValidBatch(
             self.valid_pos_h_addr,
             self.valid_pos_t_addr,
             self.valid_pos_r_addr,
+            self.valid_pos_d_addr,
+
             self.valid_neg_h_addr,
             self.valid_neg_t_addr,
             self.valid_neg_r_addr,
+            self.valid_neg_d_addr,
+
         )
         res_pos = self.test_one_step(
             self.testModel, self.valid_pos_h, self.valid_pos_t, self.valid_pos_r
@@ -491,7 +544,7 @@ class Config(object):
         res_neg = self.test_one_step(
             self.testModel, self.test_neg_h, self.test_neg_t, self.test_neg_r
         )
-        self.lib.test_triple_classification(
+        self.lib.test_quadruple_classification(
             self.relThresh_addr,
             res_pos.__array_interface__["data"][0],
             res_neg.__array_interface__["data"][0],
@@ -500,5 +553,14 @@ class Config(object):
     def test(self):
         if self.test_link:
             self.link_prediction()
-        if self.test_triple:
-            self.triple_classification()
+        if self.test_quadruple:
+            self.quadruple_classification()
+
+    ########################
+    ###Evloving Parameter###
+    ########################
+    def set_enddate(self, enddate):
+        self.enddate = enddate
+
+    def set_tlmbda(self, tlmbda):
+        self.tlmbda = tlmbda

@@ -25,20 +25,22 @@ void initTest() {
     l3_filter_tot_constrain = 0, l3_tot_constrain = 0, r3_tot_constrain = 0, r3_filter_tot_constrain = 0, l_filter_tot_constrain = 0, r_filter_tot_constrain = 0, r_filter_rank_constrain = 0, r_rank_constrain = 0, r_filter_reci_rank_constrain = 0, r_reci_rank_constrain = 0;
 }
 extern "C"
-void getHeadBatch(INT *ph, INT *pt, INT *pr) {
+void getHeadBatch(INT *ph, INT *pt, INT *pr, INT *pd) {
     for (INT i = 0; i < entityTotal; i++) {
         ph[i] = i;
         pt[i] = testList[lastHead].t;
         pr[i] = testList[lastHead].r;
+        pd[i] = testList[lastHead].d;
     }
 }
 
 extern "C"
-void getTailBatch(INT *ph, INT *pt, INT *pr) {
+void getTailBatch(INT *ph, INT *pt, INT *pr, INT *pd) {
     for (INT i = 0; i < entityTotal; i++) {
         ph[i] = testList[lastTail].h;
         pt[i] = i;
         pr[i] = testList[lastTail].r;
+        pd[i] = testList[lastTail].d;
     }
 }
 
@@ -47,6 +49,9 @@ void testHead(REAL *con) {
     INT h = testList[lastHead].h;
     INT t = testList[lastHead].t;
     INT r = testList[lastHead].r;
+    // time
+    INT d = testList[lastHead].d;
+
     INT lef = head_lef[r], rig = head_rig[r];
 
     REAL minimal = con[h];
@@ -60,14 +65,14 @@ void testHead(REAL *con) {
             REAL value = con[j];
             if (value < minimal) {
                 l_s += 1;
-                if (not _find(j, t, r))
+                if (not _find(j, t, r, d))
                     l_filter_s += 1;
             }
             while (lef < rig && head_type[lef] < j) lef ++;
             if (lef < rig && j == head_type[lef]) {
                 if (value < minimal) {
                     l_s_constrain += 1;
-                    if (not _find(j, t, r)) {
+                    if (not _find(j, t, r, d)) {
                         l_filter_s_constrain += 1;
                     }
                 }  
@@ -110,6 +115,9 @@ void testTail(REAL *con) {
     INT h = testList[lastTail].h;
     INT t = testList[lastTail].t;
     INT r = testList[lastTail].r;
+    // time
+    INT d = testList[lastTail].d;
+
     INT lef = tail_lef[r], rig = tail_rig[r];
     REAL minimal = con[t];
     INT r_s = 0;
@@ -121,14 +129,14 @@ void testTail(REAL *con) {
             REAL value = con[j];
             if (value < minimal) {
                 r_s += 1;
-                if (not _find(h, j, r))
+                if (not _find(h, j, r, d))
                     r_filter_s += 1;
             }
             while (lef < rig && tail_type[lef] < j) lef ++;
             if (lef < rig && j == tail_type[lef]) {
                     if (value < minimal) {
                         r_s_constrain += 1;
-                        if (not _find(h, j ,r)) {
+                        if (not _find(h, j ,r, d)) {
                             r_filter_s_constrain += 1;
                         }
                     }
@@ -251,12 +259,12 @@ void test_link_prediction() {
 }
 
 /*=====================================================================================
-triple classification
+quadruple classification
 ======================================================================================*/
-Triple *negTestList;
+Quadruple *negTestList;
 extern "C"
 void getNegTest() {
-    negTestList = (Triple *)calloc(testTotal, sizeof(Triple));
+    negTestList = (Quadruple *)calloc(testTotal, sizeof(Quadruple));
     for (INT i = 0; i < testTotal; i++) {
         negTestList[i] = testList[i];
         negTestList[i].t = corrupt(testList[i].h, testList[i].r);
@@ -271,10 +279,10 @@ void getNegTest() {
     */
 }
 
-Triple *negValidList;
+Quadruple *negValidList;
 extern "C"
 void getNegValid() {
-    negValidList = (Triple *)calloc(validTotal, sizeof(Triple));
+    negValidList = (Quadruple *)calloc(validTotal, sizeof(Quadruple));
     for (INT i = 0; i < validTotal; i++) {
         negValidList[i] = validList[i];
         negValidList[i].t = corrupt(validList[i].h, validList[i].r);
@@ -290,28 +298,38 @@ void getNegValid() {
 }
 
 extern "C"
-void getTestBatch(INT *ph, INT *pt, INT *pr, INT *nh, INT *nt, INT *nr) {
+void getTestBatch(INT *ph, INT *pt, INT *pr, INT *pd, INT *nh, INT *nt, INT *nr, INT *nd) {
     getNegTest();
     for (INT i = 0; i < testTotal; i++) {
         ph[i] = testList[i].h;
         pt[i] = testList[i].t;
         pr[i] = testList[i].r;
+
+        pd[i] = testList[i].d;
+
         nh[i] = negTestList[i].h;
         nt[i] = negTestList[i].t;
         nr[i] = negTestList[i].r;
+
+        nd[i] = negTestList[i].d;
     }
 }
 
 extern "C"
-void getValidBatch(INT *ph, INT *pt, INT *pr, INT *nh, INT *nt, INT *nr) {
+void getValidBatch(INT *ph, INT *pt, INT *pr, INT *pd, INT *nh, INT *nt, INT *nr, INT *nd) {
     getNegValid();
     for (INT i = 0; i < validTotal; i++) {
         ph[i] = validList[i].h;
         pt[i] = validList[i].t;
         pr[i] = validList[i].r;
+
+        pd[i] = validList[i].d;
+
         nh[i] = negValidList[i].h;
         nt[i] = negValidList[i].t;
         nr[i] = negValidList[i].r;
+
+        nd[i] = negValidList[i].d;
     }
 }
 REAL threshEntire;
@@ -357,7 +375,7 @@ void getBestThreshold(REAL *relThresh, REAL *score_pos, REAL *score_neg) {
 REAL *testAcc;
 REAL aveAcc;
 extern "C"
-void test_triple_classification(REAL *relThresh, REAL *score_pos, REAL *score_neg) {
+void test_quadruple_classification(REAL *relThresh, REAL *score_pos, REAL *score_neg) {
     testAcc = (REAL *)calloc(relationTotal, sizeof(REAL));
     INT aveCorrect = 0, aveTotal = 0;
     REAL aveAcc;
@@ -374,7 +392,7 @@ void test_triple_classification(REAL *relThresh, REAL *score_pos, REAL *score_ne
         aveTotal += total;
     }
     aveAcc = 1.0 * aveCorrect / aveTotal;
-    printf("triple classification accuracy is %lf\n", aveAcc);
+    printf("quadruple classification accuracy is %lf\n", aveAcc);
 }
 
 #endif

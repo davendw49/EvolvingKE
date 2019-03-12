@@ -1,20 +1,22 @@
 #ifndef READER_H
 #define READER_H
 #include "Setting.h"
-#include "Triple.h"
+#include "Quadruple.h"
 #include <cstdlib>
 #include <algorithm>
 
-INT *freqRel, *freqEnt;
+//INT daylong(INT date_e, INT date_s, INT y);
+
+INT *freqRel, *freqEnt, *freqDat;
 INT *lefHead, *rigHead;
 INT *lefTail, *rigTail;
 INT *lefRel, *rigRel;
 REAL *left_mean, *right_mean;
 
-Triple *trainList;
-Triple *trainHead;
-Triple *trainTail;
-Triple *trainRel;
+Quadruple *trainList;
+Quadruple *trainHead;
+Quadruple *trainTail;
+Quadruple *trainRel;
 
 INT *testLef, *testRig;
 INT *validLef, *validRig;
@@ -36,39 +38,58 @@ void importTrainFiles() {
 	printf("The total of entities is %ld.\n", entityTotal);
 	fclose(fin);
 
+    fin = fopen((inPath + "date2id.txt").c_str(), "r");
+    tmp = fscanf(fin, "%ld", &dateTotal);
+    printf("The total of date is %ld.\n", dateTotal);
+    fclose(fin);
+
 	fin = fopen((inPath + "train2id.txt").c_str(), "r");
 	tmp = fscanf(fin, "%ld", &trainTotal);
-	trainList = (Triple *)calloc(trainTotal, sizeof(Triple));
-	trainHead = (Triple *)calloc(trainTotal, sizeof(Triple));
-	trainTail = (Triple *)calloc(trainTotal, sizeof(Triple));
-	trainRel = (Triple *)calloc(trainTotal, sizeof(Triple));
-	freqRel = (INT *)calloc(relationTotal, sizeof(INT));
+
+	trainList = (Quadruple *)calloc(trainTotal, sizeof(Quadruple));
+	trainHead = (Quadruple *)calloc(trainTotal, sizeof(Quadruple));
+	trainTail = (Quadruple *)calloc(trainTotal, sizeof(Quadruple));
+	trainRel = (Quadruple *)calloc(trainTotal, sizeof(Quadruple));
+	
+    freqRel = (INT *)calloc(relationTotal, sizeof(INT));
 	freqEnt = (INT *)calloc(entityTotal, sizeof(INT));
+    // time
+    freqDat = (INT *)calloc(dateTotal, sizeof(INT));
+
 	for (INT i = 0; i < trainTotal; i++) {
 		tmp = fscanf(fin, "%ld", &trainList[i].h);
 		tmp = fscanf(fin, "%ld", &trainList[i].t);
 		tmp = fscanf(fin, "%ld", &trainList[i].r);
+        tmp = fscanf(fin, "%ld", &trainList[i].d);
+
+        //trainList[i].d = daylong(trainList[i].d,20160101,2016);
 	}
 	fclose(fin);
-	std::sort(trainList, trainList + trainTotal, Triple::cmp_head);
+	std::sort(trainList, trainList + trainTotal, Quadruple::cmp_head);
+
 	tmp = trainTotal; trainTotal = 1;
-	trainHead[0] = trainTail[0] = trainRel[0] = trainList[0];
-	freqEnt[trainList[0].t] += 1;
+	
+    trainHead[0] = trainTail[0] = trainRel[0] = trainList[0];
+	
+    freqEnt[trainList[0].t] += 1;
 	freqEnt[trainList[0].h] += 1;
 	freqRel[trainList[0].r] += 1;
-	for (INT i = 1; i < tmp; i++)
+    freqDat[trainList[0].d] += 1;
+	
+    for (INT i = 1; i < tmp; i++)
 		if (trainList[i].h != trainList[i - 1].h || trainList[i].r != trainList[i - 1].r || trainList[i].t != trainList[i - 1].t) {
 			trainHead[trainTotal] = trainTail[trainTotal] = trainRel[trainTotal] = trainList[trainTotal] = trainList[i];
 			trainTotal++;
 			freqEnt[trainList[i].t]++;
 			freqEnt[trainList[i].h]++;
 			freqRel[trainList[i].r]++;
+            freqDat[trainList[i].d]++;
 		}
 
-	std::sort(trainHead, trainHead + trainTotal, Triple::cmp_head);
-	std::sort(trainTail, trainTail + trainTotal, Triple::cmp_tail);
-	std::sort(trainRel, trainRel + trainTotal, Triple::cmp_rel);
-	printf("The total of train triples is %ld.\n", trainTotal);
+	std::sort(trainHead, trainHead + trainTotal, Quadruple::cmp_head);
+	std::sort(trainTail, trainTail + trainTotal, Quadruple::cmp_tail);
+	std::sort(trainRel, trainRel + trainTotal, Quadruple::cmp_rel);
+	printf("The total of train quadruples is %ld.\n", trainTotal);
 
 	lefHead = (INT *)calloc(entityTotal, sizeof(INT));
 	rigHead = (INT *)calloc(entityTotal, sizeof(INT));
@@ -76,10 +97,12 @@ void importTrainFiles() {
 	rigTail = (INT *)calloc(entityTotal, sizeof(INT));
 	lefRel = (INT *)calloc(entityTotal, sizeof(INT));
 	rigRel = (INT *)calloc(entityTotal, sizeof(INT));
+
 	memset(rigHead, -1, sizeof(INT)*entityTotal);
 	memset(rigTail, -1, sizeof(INT)*entityTotal);
 	memset(rigRel, -1, sizeof(INT)*entityTotal);
-	for (INT i = 1; i < trainTotal; i++) {
+	
+    for (INT i = 1; i < trainTotal; i++) {
 		if (trainTail[i].t != trainTail[i - 1].t) {
 			rigTail[trainTail[i - 1].t] = i - 1;
 			lefTail[trainTail[i].t] = i;
@@ -120,9 +143,9 @@ void importTrainFiles() {
 	}
 }
 
-Triple *testList;
-Triple *validList;
-Triple *tripleList;
+Quadruple *testList;
+Quadruple *validList;
+Quadruple *quadrupleList;
 
 extern "C"
 void importTestFiles() {
@@ -137,47 +160,68 @@ void importTestFiles() {
     tmp = fscanf(fin, "%ld", &entityTotal);
     fclose(fin);
 
+    fin = fopen((inPath + "date2id.txt").c_str(), "r");
+    tmp = fscanf(fin, "%ld", &dateTotal);
+    fclose(fin);
+
     FILE* f_kb1 = fopen((inPath + "test2id.txt").c_str(), "r");
     FILE* f_kb2 = fopen((inPath + "train2id.txt").c_str(), "r");
     FILE* f_kb3 = fopen((inPath + "valid2id.txt").c_str(), "r");
+
     tmp = fscanf(f_kb1, "%ld", &testTotal);
     tmp = fscanf(f_kb2, "%ld", &trainTotal);
     tmp = fscanf(f_kb3, "%ld", &validTotal);
-    tripleTotal = testTotal + trainTotal + validTotal;
-    testList = (Triple *)calloc(testTotal, sizeof(Triple));
-    validList = (Triple *)calloc(validTotal, sizeof(Triple));
-    tripleList = (Triple *)calloc(tripleTotal, sizeof(Triple));
+
+    quadrupleTotal = testTotal + trainTotal + validTotal;
+
+    testList = (Quadruple *)calloc(testTotal, sizeof(Quadruple));
+    validList = (Quadruple *)calloc(validTotal, sizeof(Quadruple));
+    quadrupleList = (Quadruple *)calloc(quadrupleTotal, sizeof(Quadruple));
+
     for (INT i = 0; i < testTotal; i++) {
         tmp = fscanf(f_kb1, "%ld", &testList[i].h);
         tmp = fscanf(f_kb1, "%ld", &testList[i].t);
         tmp = fscanf(f_kb1, "%ld", &testList[i].r);
-        tripleList[i] = testList[i];
+        tmp = fscanf(f_kb1, "%ld", &testList[i].d);
+        //testList[i].d = daylong(testList[i].d,20160101,2016);
+
+        quadrupleList[i] = testList[i];
     }
     for (INT i = 0; i < trainTotal; i++) {
-        tmp = fscanf(f_kb2, "%ld", &tripleList[i + testTotal].h);
-        tmp = fscanf(f_kb2, "%ld", &tripleList[i + testTotal].t);
-        tmp = fscanf(f_kb2, "%ld", &tripleList[i + testTotal].r);
+        tmp = fscanf(f_kb2, "%ld", &quadrupleList[i + testTotal].h);
+        tmp = fscanf(f_kb2, "%ld", &quadrupleList[i + testTotal].t);
+        tmp = fscanf(f_kb2, "%ld", &quadrupleList[i + testTotal].r);
+        tmp = fscanf(f_kb2, "%ld", &quadrupleList[i + testTotal].d);
+
+        //quadrupleList[i + testTotal].d = daylong(&quadrupleList[i + testTotal].d,20160101,2016);
     }
     for (INT i = 0; i < validTotal; i++) {
-        tmp = fscanf(f_kb3, "%ld", &tripleList[i + testTotal + trainTotal].h);
-        tmp = fscanf(f_kb3, "%ld", &tripleList[i + testTotal + trainTotal].t);
-        tmp = fscanf(f_kb3, "%ld", &tripleList[i + testTotal + trainTotal].r);
-        validList[i] = tripleList[i + testTotal + trainTotal];
+        tmp = fscanf(f_kb3, "%ld", &quadrupleList[i + testTotal + trainTotal].h);
+        tmp = fscanf(f_kb3, "%ld", &quadrupleList[i + testTotal + trainTotal].t);
+        tmp = fscanf(f_kb3, "%ld", &quadrupleList[i + testTotal + trainTotal].r);
+        tmp = fscanf(f_kb3, "%ld", &quadrupleList[i + testTotal + trainTotal].d);
+
+        //quadrupleList[i + testTotal + trainTotal].d = daylong(quadrupleList[i + testTotal + trainTotal].d,20160101,2016);
+
+        validList[i] = quadrupleList[i + testTotal + trainTotal];
     }
     fclose(f_kb1);
     fclose(f_kb2);
     fclose(f_kb3);
 
-    std::sort(tripleList, tripleList + tripleTotal, Triple::cmp_head);
-    std::sort(testList, testList + testTotal, Triple::cmp_rel2);
-    std::sort(validList, validList + validTotal, Triple::cmp_rel2);
-    printf("The total of test triples is %ld.\n", testTotal);
-    printf("The total of valid triples is %ld.\n", validTotal);
+    std::sort(quadrupleList, quadrupleList + quadrupleTotal, Quadruple::cmp_head);
+    std::sort(testList, testList + testTotal, Quadruple::cmp_rel2);
+    std::sort(validList, validList + validTotal, Quadruple::cmp_rel2);
+
+    printf("The total of test quadruples is %ld.\n", testTotal);
+    printf("The total of valid quadruples is %ld.\n", validTotal);
 
     testLef = (INT *)calloc(relationTotal, sizeof(INT));
     testRig = (INT *)calloc(relationTotal, sizeof(INT));
+
     memset(testLef, -1, sizeof(INT) * relationTotal);
     memset(testRig, -1, sizeof(INT) * relationTotal);
+
     for (INT i = 1; i < testTotal; i++) {
 	if (testList[i].r != testList[i-1].r) {
 	    testRig[testList[i-1].r] = i - 1;
@@ -261,6 +305,5 @@ void importTypeFiles() {
     }
     fclose(f_type);
 }
-
 
 #endif

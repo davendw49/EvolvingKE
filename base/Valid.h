@@ -19,20 +19,22 @@ void validInit() {
 }
 
 extern "C"
-void getValidHeadBatch(INT *ph, INT *pt, INT *pr) {
+void getValidHeadBatch(INT *ph, INT *pt, INT *pr, INT *pd) {
     for (INT i = 0; i < entityTotal; i++) {
 	ph[i] = i;
 	pt[i] = validList[lastValidHead].t;
 	pr[i] = validList[lastValidHead].r;
+    pd[i] = validList[lastValidHead].d;
     }
 }
 
 extern "C"
-void getValidTailBatch(INT *ph, INT *pt, INT *pr) {
+void getValidTailBatch(INT *ph, INT *pt, INT *pr, INT *pd) {
     for (INT i = 0; i < entityTotal; i++) {
 	ph[i] = validList[lastValidTail].h;
 	pt[i] = i;
 	pr[i] = validList[lastValidTail].r;
+    pd[i] = validList[lastValidHead].d;
     }
 }
 
@@ -41,15 +43,16 @@ void validHead(REAL *con) {
     INT h = validList[lastValidHead].h;
     INT t = validList[lastValidHead].t;
     INT r = validList[lastValidHead].r;
+    INT d = validList[lastValidHead].d;
     REAL minimal = con[h];
     INT l_filter_s = 0;
     for (INT j = 0; j < entityTotal; j++) {
-	if (j != h) {
-	    REAL value = con[j];
-   	    if (value < minimal && ! _find(j, t, r)) {
-		l_filter_s += 1;
-	    }
-	}
+    	if (j != h) {
+    	    REAL value = con[j];
+       	    if (value < minimal && ! _find(j, t, r, d)) {
+    		  l_filter_s += 1;
+    	    }
+    	}
     }
     if (l_filter_s < 10) l_valid_filter_tot += 1;
     lastValidHead ++;
@@ -61,12 +64,13 @@ void validTail(REAL *con) {
     INT h = validList[lastValidTail].h;
     INT t = validList[lastValidTail].t;
     INT r = validList[lastValidTail].r;
+    INT d = validList[lastValidTail].d;
     REAL minimal = con[t];
     INT r_filter_s = 0;
     for (INT j = 0; j < entityTotal; j++) {
 	if (j != t) {
 	    REAL value = con[j];
-	    if (value < minimal && ! _find(h, j, r)) {
+	    if (value < minimal && ! _find(h, j, r, d)) {
 	        r_filter_s += 1;
 	    }
 	}

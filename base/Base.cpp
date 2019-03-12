@@ -29,7 +29,7 @@ extern "C"
 INT getRelationTotal();
 
 extern "C"
-INT getTripleTotal();
+INT getQuadrupleTotal();
 
 extern "C"
 INT getTrainTotal();
@@ -51,6 +51,10 @@ struct Parameter {
 	INT *batch_h;
 	INT *batch_t;
 	INT *batch_r;
+	
+	// time
+	INT *batch_d;
+
 	REAL *batch_y;
 	INT batchSize;
 	INT negRate;
@@ -63,10 +67,13 @@ void* getBatch(void* con) {
 	INT *batch_h = para -> batch_h;
 	INT *batch_t = para -> batch_t;
 	INT *batch_r = para -> batch_r;
+	INT *batch_d = para -> batch_d;
+
 	REAL *batch_y = para -> batch_y;
 	INT batchSize = para -> batchSize;
 	INT negRate = para -> negRate;
 	INT negRelRate = para -> negRelRate;
+
 	INT lef, rig;
 	if (batchSize % workThreads == 0) {
 		lef = id * (batchSize / workThreads);
@@ -82,6 +89,9 @@ void* getBatch(void* con) {
 		batch_h[batch] = trainList[i].h;
 		batch_t[batch] = trainList[i].t;
 		batch_r[batch] = trainList[i].r;
+
+		batch_d[batch] = trainList[i].d;
+		
 		batch_y[batch] = 1;
 		INT last = batchSize;
 		for (INT times = 0; times < negRate; times ++) {
@@ -91,10 +101,12 @@ void* getBatch(void* con) {
 				batch_h[batch + last] = trainList[i].h;
 				batch_t[batch + last] = corrupt_head(id, trainList[i].h, trainList[i].r);
 				batch_r[batch + last] = trainList[i].r;
+				batch_d[batch + last] = trainList[i].d;
 			} else {
 				batch_h[batch + last] = corrupt_tail(id, trainList[i].t, trainList[i].r);;
 				batch_t[batch + last] = trainList[i].t;
 				batch_r[batch + last] = trainList[i].r;
+				batch_d[batch + last] = trainList[i].d;
 			}
 			batch_y[batch + last] = -1;
 			last += batchSize;
@@ -103,6 +115,7 @@ void* getBatch(void* con) {
 			batch_h[batch + last] = trainList[i].h;
 			batch_t[batch + last] = trainList[i].t;
 			batch_r[batch + last] = corrupt_rel(id, trainList[i].h, trainList[i].t);
+			batch_d[batch + last] = trainList[i].d;
 			batch_y[batch + last] = -1;
 			last += batchSize;
 		}
@@ -111,7 +124,7 @@ void* getBatch(void* con) {
 }
 
 extern "C"
-void sampling(INT *batch_h, INT *batch_t, INT *batch_r, REAL *batch_y, INT batchSize, INT negRate = 1, INT negRelRate = 0) {
+void sampling(INT *batch_h, INT *batch_t, INT *batch_r, INT *batch_d, REAL *batch_y, INT batchSize, INT negRate = 1, INT negRelRate = 0) {
 	pthread_t *pt = (pthread_t *)malloc(workThreads * sizeof(pthread_t));
 	Parameter *para = (Parameter *)malloc(workThreads * sizeof(Parameter));
 	for (INT threads = 0; threads < workThreads; threads++) {
@@ -119,6 +132,8 @@ void sampling(INT *batch_h, INT *batch_t, INT *batch_r, REAL *batch_y, INT batch
 		para[threads].batch_h = batch_h;
 		para[threads].batch_t = batch_t;
 		para[threads].batch_r = batch_r;
+		para[threads].batch_d = batch_d;
+
 		para[threads].batch_y = batch_y;
 		para[threads].batchSize = batchSize;
 		para[threads].negRate = negRate;

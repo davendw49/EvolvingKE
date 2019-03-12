@@ -4,10 +4,10 @@ import json
 import os 
 os.environ['CUDA_VISIBLE_DEVICES']=''
 con = config.Config()
-con.set_in_path("./benchmarks/FB15K/")
+con.set_in_path("./benchmarks/IE15K-EKG/")
 con.set_work_threads(8)
-con.set_train_times(10)
-con.set_nbatches(100)	
+con.set_train_times(500)
+con.set_nbatches(10)
 con.set_alpha(0.001)
 con.set_bern(0)
 con.set_dimension(100)
@@ -22,6 +22,12 @@ con.set_checkpoint_dir("./checkpoint")
 con.set_result_dir("./result")
 con.set_test_link(True)
 con.set_test_triple(True)
+########################
+###Evloving Parameter###
+########################
+# 时间指数变量值con.set_tlmbda(1)
+# 时间终止影响点con.set_enddate(280)
+
 con.init()
 con.set_train_model(TransE)
 con.train()
