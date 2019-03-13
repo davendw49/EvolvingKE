@@ -15,7 +15,6 @@ import copy
 def to_var(x):
     return Variable(torch.from_numpy(x))#.cuda()
 
-
 class Config(object):
     def __init__(self):
         base_file = os.path.abspath(
@@ -231,6 +230,34 @@ class Config(object):
         self.relThresh = np.zeros(self.relTotal, dtype=np.float32)
         self.relThresh_addr = self.relThresh.__array_interface__["data"][0]
 
+        print("path\t", self.in_path)
+        print("batch_size\t", self.batch_size)
+        print("bern\t", self.bern)
+        print("work_threads\t", self.work_threads)
+        print("hidden_size\t", self.hidden_size)
+        print("negative_ent\t", self.negative_ent)
+        print("negative_rel\t", self.negative_rel)
+        print("margin\t", self.margin)
+        print("valid_steps\t", self.valid_steps)
+        print("save_steps\t", self.save_steps)
+        print("opt_method\t", self.opt_method)
+        print("lmbda\t", self.lmbda)
+        print("alpha\t", self.alpah)
+        print("early_stop\t", self.early_stopping_patience)
+        print("nbatches\t", self.nbatches)
+        print("p_norm\t", self.p_norm)
+        print("test_link\t", self.test_link)
+        print("test_quadruple\t", self.test_quadruple)
+        print("model\t", self.model)
+        print("trainModel\t", self.trainModel)
+        print("testModel\t", self.testModel)
+        print("pretrain_model\t", self.pretrain_model)
+        ########################
+        ###Evloving Parameter###
+        ########################
+        print("enddate", self.enddate)
+        print("time based lmbda", self.tlmbda)
+
     def set_test_link(self, test_link):
         self.test_link = test_link
 
@@ -418,8 +445,8 @@ class Config(object):
     def valid(self, model):
         self.lib.validInit()
         for i in range(self.validTotal):
-            sys.stdout.write("%d\r" % (i))
-            sys.stdout.flush()
+            # sys.stdout.write("%d\r" % (i))
+            # sys.stdout.flush()
             self.lib.getValidHeadBatch(
                 self.valid_h_addr, self.valid_t_addr, self.valid_r_addr, self.valid_d_addr
             )
@@ -432,7 +459,7 @@ class Config(object):
             )
             res = self.test_one_step(model, self.valid_h, self.valid_t, self.valid_r, self.valid_d)
             self.lib.validTail(res.__array_interface__["data"][0])
-        return self.lib.getValidHit10()
+        return self.lib.getValidHit10(), self.lib.getValidMeanRank()
 
     def train(self):
         if not os.path.exists(self.checkpoint_dir):
@@ -440,6 +467,7 @@ class Config(object):
         best_epoch = 0
         best_hit10 = 0.0
         best_model = None
+        best_mrank = 0.0
         bad_counts = 0
         for epoch in range(self.train_times):
             res = 0.0
@@ -453,12 +481,14 @@ class Config(object):
                 self.save_checkpoint(self.trainModel.state_dict(), epoch)
             if (epoch + 1) % self.valid_steps == 0:
                 print("Epoch %d has finished, validating..." % (epoch))
-                hit10 = self.valid(self.trainModel)
+                hit10, meanRank= self.valid(self.trainModel)
+                # print(hit10, meanRank, type(hit10), type(meanRank))
                 if hit10 > best_hit10:
                     best_hit10 = hit10
+                    best_mrank = meanRank
                     best_epoch = epoch
                     best_model = copy.deepcopy(self.trainModel.state_dict())
-                    print("Best model | hit@10 of valid set is %f" % (best_hit10))
+                    print("Best model | hit@10 of valid set is %f, meanRank of valid set is %f" % (best_hit10, meanRank))
                     bad_counts = 0
                 else:
                     print(
@@ -472,8 +502,9 @@ class Config(object):
         if best_model == None:
             best_model = self.trainModel.state_dict()
             best_epoch = self.train_times - 1
-            best_hit10 = self.valid(self.trainModel)
-        print("Best epoch is %d | hit@10 of valid set is %f" % (best_epoch, best_hit10))
+            best_hit10, meanRank = self.valid(self.trainModel)
+            # best_hit10, meanRank = 1.4,2.1
+        print("Best epoch is %d | hit@10 of valid set is %f, meanRank of valid set is %f" % (best_epoch, best_hit10, best_mrank))
         print("Store checkpoint of best result at epoch %d..." % (best_epoch))
         if not os.path.isdir(self.result_dir):
             os.mkdir(self.result_dir)
@@ -484,13 +515,14 @@ class Config(object):
         self.set_test_model(self.model)
         self.test()
         print("Finish test")
+        
         return best_model
 
     def link_prediction(self):
         print("The total of test quadruple is %d" % (self.testTotal))
         for i in range(self.testTotal):
-            sys.stdout.write("%d\r" % (i))
-            sys.stdout.flush()
+            # sys.stdout.write("%d\r" % (i))
+            # sys.stdout.flush()
             self.lib.getHeadBatch(self.test_h_addr, self.test_t_addr, self.test_r_addr, self.test_d_addr)
             res = self.test_one_step(
                 self.testModel, self.test_h, self.test_t, self.test_r, self.test_d
