@@ -7,8 +7,8 @@
 INT lastValidHead = 0;
 INT lastValidTail = 0;
 	
-REAL l_valid_filter_tot = 0, l_valid_filter_valid_rank = 0, l_valid_rank = 0, l_valid_filter_reci_rank = 0, l_valid_reci_rank = 0;
-REAL r_valid_filter_tot = 0, r_valid_filter_valid_rank = 0, r_valid_rank = 0, r_valid_filter_reci_rank = 0, r_valid_reci_rank = 0;
+REAL l_valid_filter_tot = 0, l_valid_filter_valid_rank = 0;
+REAL r_valid_filter_tot = 0, r_valid_filter_valid_rank = 0;
 
 
 extern "C"
@@ -19,8 +19,8 @@ void validInit() {
     l_valid_filter_tot = 0;
     r_valid_filter_tot = 0;
 
-    l_valid_filter_valid_rank = 0, l_valid_rank = 0, l_valid_filter_reci_rank = 0, l_valid_reci_rank = 0;
-    r_valid_filter_valid_rank = 0, r_valid_rank = 0, r_valid_filter_reci_rank = 0, r_valid_reci_rank = 0;
+    l_valid_filter_valid_rank = 0;
+    r_valid_filter_valid_rank = 0;
 }
 
 extern "C"
@@ -168,9 +168,9 @@ REAL  getValidHit10() {
 REAL validMeanRank = 0;
 extern "C"
 REAL  getValidMeanRank() {
-    l_valid_reci_rank /= validTotal;
-    r_valid_reci_rank /= validTotal;
-    validMeanRank = (l_valid_reci_rank + r_valid_reci_rank)/2;
+    l_valid_filter_valid_rank /= validTotal;
+    r_valid_filter_valid_rank /= validTotal;
+    validMeanRank = (l_valid_filter_valid_rank + r_valid_filter_valid_rank)/2;
    // printf("result: %f\n", validHit10);
     return validMeanRank;
 }
