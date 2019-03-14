@@ -109,7 +109,7 @@ REAL  getValidMeanRank() {
     l_valid_filter_rank /= validTotal;
     r_valid_filter_rank /= validTotal;
     validMeanRank = (l_valid_filter_rank + r_valid_filter_rank)/2;
-    printf("result: %f\n", validMeanRank);
+    //printf("result: %f\n", validMeanRank);
     return validMeanRank;
 }
 

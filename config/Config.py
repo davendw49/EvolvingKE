@@ -98,6 +98,7 @@ class Config(object):
         ]
         """restype"""
         self.lib.getValidHit10.restype = ctypes.c_float
+        self.lib.getValidMeanRank.restype = ctypes.c_float
         """set essential parameters"""
         self.in_path = "./"
         self.batch_size = 100
