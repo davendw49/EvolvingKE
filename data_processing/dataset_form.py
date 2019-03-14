@@ -1,11 +1,11 @@
 import pandas as pd
 
-test2id = open("../benchmarks/IE15K-EKG/test2id.txt", "w", encoding='utf8')
-valid2id = open("../benchmarks/IE15K-EKG/valid2id.txt", "w", encoding='utf8')
+test2id = open("../benchmarks/QG18K-EKG/test2id.txt", "w", encoding='utf8')
+valid2id = open("../benchmarks/QG18K-EKG/valid2id.txt", "w", encoding='utf8')
 
 def planA():
-	f = open("../benchmarks/IE15K-EKG/origin2all.txt", "r", encoding='utf8')
-	f_train = open("../benchmarks/IE15K-EKG/train2id.txt", "w", encoding='utf8')
+	f = open("../benchmarks/QG18K-EKG/origin2all.txt", "r", encoding='utf8')
+	f_train = open("../benchmarks/QG18K-EKG/train2id.txt", "w", encoding='utf8')
 	testandvalid = []
 	for line in f:
 		line = line[:len(line)]
@@ -26,8 +26,8 @@ def planA():
 		print(str(data2.iloc[i]['Source'].strip()),str(data2.iloc[i]['Target'].strip()),str(data2.iloc[i]['CAMEOcode'].strip()),str(data2.iloc[i]['Date'].strip()), file=valid2id)
 
 def planB():
-	f = open("../benchmarks/IE15K-EKG/origin2all.txt", "r", encoding='utf8')
-	f_train = open("../benchmarks/IE15K-EKG/train2id.txt", "w", encoding='utf8')
+	f = open("../benchmarks/QG18K-EKG/origin2all.txt", "r", encoding='utf8')
+	f_train = open("../benchmarks/QG18K-EKG/train2id.txt", "w", encoding='utf8')
 	testandvalid = []
 	for line in f:
 		line = line[:len(line)]

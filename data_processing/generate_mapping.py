@@ -1,4 +1,4 @@
-f = open("../benchmarks/IE15K-EKG/origin_tiny.txt", "r", encoding='utf8')
+f = open("../benchmarks/QG18K-EKG/origin_tiny.txt", "r", encoding='utf8')
 
 
 entity_map = {}
@@ -14,9 +14,9 @@ for line in f:
 	if c[3] not in date_map:
 		date_map.append(c[3])
 
-f_e = open("../benchmarks/IE15K-EKG/entity2id.txt", "w", encoding='utf8')
-f_r = open("../benchmarks/IE15K-EKG/relation2id.txt", "w", encoding='utf8')
-f_d = open("../benchmarks/IE15K-EKG/date2id.txt", "w", encoding='utf8')
+f_e = open("../benchmarks/QG18K-EKG/entity2id.txt", "w", encoding='utf8')
+f_r = open("../benchmarks/QG18K-EKG/relation2id.txt", "w", encoding='utf8')
+f_d = open("../benchmarks/QG18K-EKG/date2id.txt", "w", encoding='utf8')
 
 pos = 0
 for i in entity_map.keys():

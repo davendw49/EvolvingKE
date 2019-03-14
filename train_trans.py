@@ -26,7 +26,7 @@ def main():
 	###########################
 	sys.stdout = Logger("test.txt")
 	trainname = "EKG"
-	con.set_in_path("./benchmarks/IE15K-EKG/")
+	con.set_in_path("./benchmarks/QG18K-UTR/")
 	print("dataset name: ", trainname)
 	con.set_work_threads(8)
 	con.set_train_times(50)
