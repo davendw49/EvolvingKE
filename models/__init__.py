@@ -3,7 +3,3 @@ from .TransE import TransE
 from .TransD import TransD
 from .TransR import TransR
 from .TransH import TransH
-from .old_model/DistMult import DistMult
-from .old_model/ComplEx import ComplEx
-from .old_model/RESCAL import RESCAL
-from .old_model/Analogy import Analogy
