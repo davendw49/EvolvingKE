@@ -17,6 +17,8 @@ class TransR(Model):
 		self.transfer_matrix = nn.Embedding(self.config.relTotal, self.config.ent_size * self.config.rel_size)
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
+
+		print("model selected TransR")
 		
 	def init_weights(self):
 		if self.config.pretrain_model == None:

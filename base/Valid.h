@@ -96,14 +96,13 @@ void validHead(REAL *con) {
     INT lef = head_lef[r], rig = head_rig[r];
 
     REAL minimal = con[h];
-    INT l_s = 0;
+    
     INT l_filter_s = 0;
 
     for (INT j = 0; j < entityTotal; j++) {
         if (j != h) {
             REAL value = con[j];
             if (value < minimal) {
-                l_s += 1;
                 if (not _find(j, t, r, d))
                     l_filter_s += 1;
             }
@@ -112,14 +111,10 @@ void validHead(REAL *con) {
 
     //hit@10
     if (l_filter_s < 10) l_valid_filter_tot += 1;
-    if (l_s < 10) l_tot += 1;
 
     // meanRank
     l_valid_filter_valid_rank += (l_filter_s+1);
-    l_valid_rank += (1+l_s);
-    l_valid_filter_reci_rank += 1.0/(l_filter_s+1);
-    l_valid_reci_rank += 1.0/(l_s+1);
-
+    
     lastValidHead++;
 
     //printf("l_filter_s: %ld\n", l_filter_s);
@@ -136,15 +131,13 @@ void validTail(REAL *con) {
 
     INT lef = tail_lef[r], rig = tail_rig[r];
     REAL minimal = con[t];
-    INT r_s = 0;
+    
     INT r_filter_s = 0;
-    INT r_s_constrain = 0;
-    INT r_filter_s_constrain = 0;
+    
     for (INT j = 0; j < entityTotal; j++) {
         if (j != t) {
             REAL value = con[j];
             if (value < minimal) {
-                r_s += 1;
                 if (not _find(h, j, r, d))
                     r_filter_s += 1;
             }
@@ -154,14 +147,9 @@ void validTail(REAL *con) {
 
     // hit@10
     if (r_filter_s < 10) r_valid_filter_tot += 1;
-    if (r_s < 10) r_tot += 1;
-
     // meanRank
     r_valid_filter_valid_rank += (1+r_filter_s);
-    r_valid_rank += (1+r_s);
-    r_valid_filter_reci_rank += 1.0/(1+r_filter_s);
-    r_valid_reci_rank += 1.0/(1+r_s);
-
+    
     lastValidTail++;
     //printf("r_filter_s: %ld\n", r_filter_s);
     //printf("%f %f %f %f\n", r_tot /lastValidTail, r_filter_tot /lastValidTail, r_valid_rank /lastValidTail, r_valid_filter_valid_rank /lastValidTail);

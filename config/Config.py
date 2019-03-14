@@ -249,9 +249,6 @@ class Config(object):
         print("test_link\t", self.test_link)
         print("test_quadruple\t", self.test_quadruple)
         print("model\t", self.model)
-        print("trainModel\t", self.trainModel)
-        print("testModel\t", self.testModel)
-        print("pretrain_model\t", self.pretrain_model)
         ########################
         ###Evloving Parameter###
         ########################
@@ -319,6 +316,7 @@ class Config(object):
 
     def set_train_times(self, train_times):
         self.train_times = train_times
+        print("train time:", train_times)
 
     def set_work_threads(self, work_threads):
         self.work_threads = work_threads
@@ -356,6 +354,7 @@ class Config(object):
 
     def set_train_model(self, model):
         print("Initializing training model...")
+        print()
         self.model = model
         self.trainModel = self.model(config=self)
         # self.trainModel.cuda()

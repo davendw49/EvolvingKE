@@ -15,6 +15,7 @@ class TransH(Model):
 		self.norm_vector = nn.Embedding(self.config.relTotal, self.config.hidden_size)
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
+		print("model selected TransH")
 		
 	def init_weights(self):
 		nn.init.xavier_uniform(self.ent_embeddings.weight.data)

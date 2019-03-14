@@ -16,6 +16,7 @@ class TransE(Model):
 
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
+		print("model selected TransE")
 		
 	def init_weights(self):
 		nn.init.xavier_uniform_(self.ent_embeddings.weight.data)
