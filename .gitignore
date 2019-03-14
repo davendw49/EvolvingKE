@@ -1,4 +1,6 @@
 # benchmarks/release/result/checkpoint
+*.txt
+profile
 benchmarks/*
 release/*
 result/*
