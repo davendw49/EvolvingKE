@@ -19,7 +19,9 @@ class TransD(Model):
 		
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
-		print("model selected TransD")
+		print("**************")
+		print("****TransD****")
+		print("**************")
 		
 	def init_weights(self):
 		nn.init.xavier_uniform(self.ent_embeddings.weight.data)

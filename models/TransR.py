@@ -17,8 +17,9 @@ class TransR(Model):
 		self.transfer_matrix = nn.Embedding(self.config.relTotal, self.config.ent_size * self.config.rel_size)
 		self.criterion = nn.MarginRankingLoss(self.config.margin, False)
 		self.init_weights()
-
-		print("model selected TransR")
+		print("**************")
+		print("****TransR****")
+		print("**************")
 		
 	def init_weights(self):
 		identity = torch.zeros(self.config.rel_size, self.config.ent_size)

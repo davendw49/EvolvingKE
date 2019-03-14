@@ -3,6 +3,7 @@ from  models import *
 import json
 import os
 import sys
+import cProfile
 
 class Logger(object):
 	"""docstring for Logger"""
@@ -18,17 +19,15 @@ class Logger(object):
 		pass
 
 def main():
+	con = config.Config()
+	os.environ['CUDA_VISIBLE_DEVICES']=''
 	###########################
 	##在这里设置要存的文件名和名字##
 	###########################
 	sys.stdout = Logger("test.txt")
 	trainname = "EKG"
-
-
-	print("dataset name: ", trainname)
-	os.environ['CUDA_VISIBLE_DEVICES']=''
-	con = config.Config()
 	con.set_in_path("./benchmarks/IE15K-EKG/")
+	print("dataset name: ", trainname)
 	con.set_work_threads(8)
 	con.set_train_times(50)
 	con.set_nbatches(10)
@@ -46,7 +45,6 @@ def main():
 	con.set_result_dir("./result")
 	con.set_test_link(True)
 	con.set_test_quadruple(True)
-	
 	########################
 	###Evloving Parameter###
 	########################
@@ -54,12 +52,8 @@ def main():
 	con.set_tlmbda(0.001)
 	# 时间终止影响点
 	con.set_enddate(280)
-
 	con.init()
-	con.set_train_model(TransR)
-
-
+	con.set_train_model(TransE)
 	con.train()
 
-import cProfile
 cProfile.run('main()', filename='profile')
