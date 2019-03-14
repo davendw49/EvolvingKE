@@ -7,6 +7,7 @@ from torch.autograd import Variable
 import numpy as np
 from .Model import Model
 from .TransE import TransE
+impor 
 
 class TransR(Model):
 	def __init__(self, config):

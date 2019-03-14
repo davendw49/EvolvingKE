@@ -111,7 +111,7 @@ void validHead(REAL *con) {
     }
 
     //hit@10
-    if (l_filter_s < 10) l_filter_tot += 1;
+    if (l_filter_s < 10) l_valid_filter_tot += 1;
     if (l_s < 10) l_tot += 1;
 
     // meanRank
@@ -153,7 +153,7 @@ void validTail(REAL *con) {
     }
 
     // hit@10
-    if (r_filter_s < 10) r_filter_tot += 1;
+    if (r_filter_s < 10) r_valid_filter_tot += 1;
     if (r_s < 10) r_tot += 1;
 
     // meanRank

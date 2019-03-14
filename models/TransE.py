@@ -34,7 +34,6 @@ class TransE(Model):
 		# return self.criterion(influ*p_score, influ*n_score, influ*y)
 
 	def forward(self):
-		
 		h = self.ent_embeddings(self.batch_h)
 		t = self.ent_embeddings(self.batch_t)
 		r = self.rel_embeddings(self.batch_r)
@@ -48,12 +47,10 @@ class TransE(Model):
 		f_score = self.loss(p_score, n_score, d_influ)
 		return f_score
 	def predict(self):
-		
 		h = self.ent_embeddings(self.batch_h)
 		t = self.ent_embeddings(self.batch_t)
 		r = self.rel_embeddings(self.batch_r)
 
-		d = self.batch_d
 		score = self._calc(h, t, r)
 		return score.cpu().data.numpy()
 

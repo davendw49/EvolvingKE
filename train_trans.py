@@ -28,7 +28,7 @@ def main():
 	print("dataset name: ", trainname)
 	os.environ['CUDA_VISIBLE_DEVICES']=''
 	con = config.Config()
-	con.set_in_path("./benchmarks/IE15K-EKG/")
+	con.set_in_path("./benchmarks/IE15K-UTR/")
 	con.set_work_threads(8)
 	con.set_train_times(5)
 	con.set_nbatches(10)
@@ -56,7 +56,7 @@ def main():
 	con.set_enddate(280)
 
 	con.init()
-	con.set_train_model(TransE)
+	con.set_train_model(TransD)
 	con.train()
 
 import cProfile
