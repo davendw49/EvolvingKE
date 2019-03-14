@@ -6,6 +6,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 from .Model import Model
+import math
 
 class TransH(Model):
 	def __init__(self, config):

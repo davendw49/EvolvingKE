@@ -46,7 +46,7 @@ def main():
 	con.set_result_dir("./result")
 	con.set_test_link(True)
 	con.set_test_quadruple(True)
-
+	
 	########################
 	###Evloving Parameter###
 	########################
@@ -56,7 +56,10 @@ def main():
 	con.set_enddate(280)
 
 	con.init()
-	con.set_train_model(TransE)
+	con.set_pretrain_model(TransE)
+	con.set_train_model(TransR)
+
+
 	con.train()
 
 import cProfile
