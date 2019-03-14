@@ -65,7 +65,7 @@ void validHead(REAL *con) {
     l_valid_filter_rank += (l_filter_s+1);
 
     lastValidHead ++;
-    printf("head: l_valid_filter_rank = %f", l_valid_filter_rank);
+    printf("head: l_valid_filter_rank = %f\n", l_valid_filter_rank);
 }
 
 extern "C"
@@ -90,7 +90,7 @@ void validTail(REAL *con) {
 
     lastValidTail ++;
 
-    printf("tail: r_valid_filter_rank = %f", r_valid_filter_rank);
+    printf("tail: r_valid_filter_rank = %f\n", r_valid_filter_rank);
 }
 
 REAL validHit10 = 0;
