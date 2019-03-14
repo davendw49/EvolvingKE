@@ -65,7 +65,7 @@ void validHead(REAL *con) {
     l_valid_filter_rank += (l_filter_s+1);
 
     lastValidHead ++;
-  //  printf("head: l_valid_filter_tot = %f | l_filter_hit10 = %f\n", l_valid_filter_tot, l_valid_filter_tot / lastValidHead);
+    printf("head: l_valid_filter_rank = %f", l_valid_filter_rank);
 }
 
 extern "C"
@@ -89,7 +89,8 @@ void validTail(REAL *con) {
     r_valid_filter_rank += (1+r_filter_s);
 
     lastValidTail ++;
-//    printf("tail: r_valid_filter_tot = %f | r_filter_hit10 = %f\n", r_valid_filter_tot, r_valid_filter_tot / lastValidTail);
+
+    printf("tail: r_valid_filter_rank = %f", r_valid_filter_rank);
 }
 
 REAL validHit10 = 0;
@@ -108,7 +109,7 @@ REAL  getValidMeanRank() {
     l_valid_filter_rank /= validTotal;
     r_valid_filter_rank /= validTotal;
     validMeanRank = (l_valid_filter_rank + r_valid_filter_rank)/2;
-   // printf("result: %f\n", validHit10);
+    printf("result: %f\n%f", validTotal, validMeanRank);
     return validMeanRank;
 }
 
