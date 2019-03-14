@@ -56,7 +56,6 @@ def main():
 	con.set_enddate(280)
 
 	con.init()
-	con.set_pretrain_model(TransE)
 	con.set_train_model(TransR)
 
 

@@ -21,10 +21,6 @@ class TransR(Model):
 		print("model selected TransR")
 		
 	def init_weights(self):
-		if self.config.pretrain_model == None:
-			raise Exception("[ERROR] Pretrain model doesn't exist!")
-		self.ent_embeddings.weight.data = self.config.pretrain_model['ent_embeddings.weight']
-		self.rel_embeddings.weight.data = self.config.pretrain_model['rel_embeddings.weight']
 		identity = torch.zeros(self.config.rel_size, self.config.ent_size)
 		for i in range(self.config.rel_size):
 			identity[i][i] = 1
@@ -33,7 +29,7 @@ class TransR(Model):
 		identity = identity.view(self.config.ent_size * self.config.rel_size)
 		for i in range(self.config.relTotal):
 			self.transfer_matrix.weight.data[i] = identity	
-	
+
 	def _calc(self, h, t, r):
 		return torch.norm(h + r - t, self.config.p_norm, -1)
 	
