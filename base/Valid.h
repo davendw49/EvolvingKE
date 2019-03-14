@@ -44,7 +44,7 @@ void getValidTailBatch(INT *ph, INT *pt, INT *pr, INT *pd) {
 }
 
 extern "C"
-void validHead0(REAL *con) {
+void validHead(REAL *con) {
     INT h = validList[lastValidHead].h;
     INT t = validList[lastValidHead].t;
     INT r = validList[lastValidHead].r;
@@ -59,13 +59,17 @@ void validHead0(REAL *con) {
     	    }
     	}
     }
+    //hit@10
     if (l_filter_s < 10) l_valid_filter_tot += 1;
+    // meanRank
+    l_valid_filter_valid_rank += (l_filter_s+1);
+
     lastValidHead ++;
   //  printf("head: l_valid_filter_tot = %f | l_filter_hit10 = %f\n", l_valid_filter_tot, l_valid_filter_tot / lastValidHead);
 }
 
 extern "C"
-void validTail0(REAL *con) {
+void validTail(REAL *con) {
     INT h = validList[lastValidTail].h;
     INT t = validList[lastValidTail].t;
     INT r = validList[lastValidTail].r;
@@ -81,78 +85,11 @@ void validTail0(REAL *con) {
 	}
     }
     if (r_filter_s < 10) r_valid_filter_tot += 1;
-    lastValidTail ++;
-//    printf("tail: r_valid_filter_tot = %f | r_filter_hit10 = %f\n", r_valid_filter_tot, r_valid_filter_tot / lastValidTail);
-}
-
-extern "C"
-void validHead(REAL *con) {
-    INT h = validList[lastValidHead].h;
-    INT t = validList[lastValidHead].t;
-    INT r = validList[lastValidHead].r;
-    // time
-    INT d = validList[lastValidHead].d;
-
-    INT lef = head_lef[r], rig = head_rig[r];
-
-    REAL minimal = con[h];
-    
-    INT l_filter_s = 0;
-
-    for (INT j = 0; j < entityTotal; j++) {
-        if (j != h) {
-            REAL value = con[j];
-            if (value < minimal) {
-                if (not _find(j, t, r, d))
-                    l_filter_s += 1;
-            }
-        }
-    }
-
-    //hit@10
-    if (l_filter_s < 10) l_valid_filter_tot += 1;
-
-    // meanRank
-    l_valid_filter_valid_rank += (l_filter_s+1);
-    
-    lastValidHead++;
-
-    //printf("l_filter_s: %ld\n", l_filter_s);
-    //printf("%f %f %f %f \n", l_tot / lastValidHead, l_filter_tot / lastValidHead, l_valid_rank / lastValidHead, l_valid_filter_valid_rank / lastValidHead);
-}
-
-extern "C"
-void validTail(REAL *con) {
-    INT h = validList[lastValidTail].h;
-    INT t = validList[lastValidTail].t;
-    INT r = validList[lastValidTail].r;
-    // time
-    INT d = validList[lastValidTail].d;
-
-    INT lef = tail_lef[r], rig = tail_rig[r];
-    REAL minimal = con[t];
-    
-    INT r_filter_s = 0;
-    
-    for (INT j = 0; j < entityTotal; j++) {
-        if (j != t) {
-            REAL value = con[j];
-            if (value < minimal) {
-                if (not _find(h, j, r, d))
-                    r_filter_s += 1;
-            }
-        }
-        
-    }
-
-    // hit@10
-    if (r_filter_s < 10) r_valid_filter_tot += 1;
     // meanRank
     r_valid_filter_valid_rank += (1+r_filter_s);
-    
-    lastValidTail++;
-    //printf("r_filter_s: %ld\n", r_filter_s);
-    //printf("%f %f %f %f\n", r_tot /lastValidTail, r_filter_tot /lastValidTail, r_valid_rank /lastValidTail, r_valid_filter_valid_rank /lastValidTail);
+
+    lastValidTail ++;
+//    printf("tail: r_valid_filter_tot = %f | r_filter_hit10 = %f\n", r_valid_filter_tot, r_valid_filter_tot / lastValidTail);
 }
 
 REAL validHit10 = 0;
