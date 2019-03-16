@@ -17,25 +17,26 @@ class Logger(object):
 
 	def flush(self):
 		pass
+sys.stdout = Logger("FindBestMargin_TransE.txt")
 
-def main():
+def do(margin):
 	con = config.Config()
 	os.environ['CUDA_VISIBLE_DEVICES']=''
 	
 	###########################
 	##在这里设置要存的文件名和名字##
 	###########################
-	sys.stdout = Logger("TransE-UTR-Margin01-5000-final.txt")
-	trainname = "UTF"
-	con.set_in_path("./benchmarks/IE15K-UTR/")
+	
+	trainname = "EKG"
+	con.set_in_path("./benchmarks/QG18K-EKG/")
 	print("dataset name: ", trainname)
 
-	con.set_train_times(3000)
-	con.set_save_steps(100)
-	con.set_valid_steps(100)
+	con.set_train_times(500)
+	con.set_save_steps(250)
+	con.set_valid_steps(250)
 	con.set_early_stopping_patience(5)
 
-	con.set_margin(0.5)
+	con.set_margin(margin)
 
 	# 时间指数变量值
 	con.set_tlmbda(0.00)
@@ -62,4 +63,6 @@ def main():
 	con.set_train_model(TransE)
 	con.train()
 
-cProfile.run('main()', filename='profile')
+
+for i in [0.01, 0.05, 0.1, 0.2, 0.5]:
+	do(i)
