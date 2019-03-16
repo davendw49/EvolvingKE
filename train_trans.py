@@ -21,26 +21,34 @@ class Logger(object):
 def main():
 	con = config.Config()
 	os.environ['CUDA_VISIBLE_DEVICES']=''
+	
 	###########################
 	##在这里设置要存的文件名和名字##
 	###########################
-	sys.stdout = Logger("test.txt")
-	trainname = "EKG"
-	con.set_in_path("./benchmarks/QG18K-UTR/")
+	sys.stdout = Logger("TransE-UTR-Margin01-5000-final.txt")
+	trainname = "UTF"
+	con.set_in_path("./benchmarks/IE15K-UTR/")
 	print("dataset name: ", trainname)
+
+	con.set_train_times(3000)
+	con.set_save_steps(100)
+	con.set_valid_steps(100)
+	con.set_early_stopping_patience(5)
+
+	con.set_margin(0.5)
+
+	# 时间指数变量值
+	con.set_tlmbda(0.00)
+
+
 	con.set_work_threads(8)
-	con.set_train_times(50)
 	con.set_nbatches(10)
 	con.set_alpha(0.001)
 	con.set_bern(0)
-	con.set_dimension(100)
-	con.set_margin(1.0)
+	con.set_dimension(50)
 	con.set_ent_neg_rate(1)
 	con.set_rel_neg_rate(0)
 	con.set_opt_method("SGD")
-	con.set_save_steps(10)
-	con.set_valid_steps(10)
-	con.set_early_stopping_patience(2)
 	con.set_checkpoint_dir("./checkpoint")
 	con.set_result_dir("./result")
 	con.set_test_link(True)
@@ -48,8 +56,6 @@ def main():
 	########################
 	###Evloving Parameter###
 	########################
-	# 时间指数变量值
-	con.set_tlmbda(0.001)
 	# 时间终止影响点
 	con.set_enddate(280)
 	con.init()
