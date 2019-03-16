@@ -17,9 +17,10 @@ class Logger(object):
 
 	def flush(self):
 		pass
-sys.stdout = Logger("FindBestMargin_TransE.txt")
 
-def do(margin):
+sys.stdout = Logger("FindBestMargin_TransE_05.txt")
+
+def do():
 	con = config.Config()
 	os.environ['CUDA_VISIBLE_DEVICES']=''
 	
@@ -36,10 +37,10 @@ def do(margin):
 	con.set_valid_steps(250)
 	con.set_early_stopping_patience(5)
 
-	con.set_margin(margin)
+	con.set_margin(0.5)
 
 	# 时间指数变量值
-	con.set_tlmbda(0.00)
+	con.set_tlmbda(0.01)
 
 
 	con.set_work_threads(8)
@@ -63,6 +64,4 @@ def do(margin):
 	con.set_train_model(TransE)
 	con.train()
 
-
-for i in [0.01, 0.05, 0.1, 0.2, 0.5]:
-	do(i)
+do()
