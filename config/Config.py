@@ -461,7 +461,11 @@ class Config(object):
             self.lib.validTail(res.__array_interface__["data"][0])
         return self.lib.getValidHit10(), self.lib.getValidMeanRank()
 
-    def train(self):
+    def train(self, version=1):
+        if version==1:
+            print("hit@10 is the chose factor")
+        else:
+            print("meanRank is the chosen factor")
         if not os.path.exists(self.checkpoint_dir):
             os.mkdir(self.checkpoint_dir)
         best_epoch = 0
@@ -483,19 +487,34 @@ class Config(object):
                 print("Epoch %d has finished, validating..." % (epoch))
                 hit10, meanRank= self.valid(self.trainModel)
                 # print(hit10, meanRank, type(hit10), type(meanRank))
-                if hit10 > best_hit10:
-                    best_hit10 = hit10
-                    best_mrank = meanRank
-                    best_epoch = epoch
-                    best_model = copy.deepcopy(self.trainModel.state_dict())
-                    print("Best model | hit@10 of valid set is %f, meanRank of valid set is %f" % (best_hit10, meanRank))
-                    bad_counts = 0
+                if version == 1:
+                    if hit10 > best_hit10:
+                        best_hit10 = hit10
+                        best_mrank = meanRank
+                        best_epoch = epoch
+                        best_model = copy.deepcopy(self.trainModel.state_dict())
+                        print("Best model | hit@10 of valid set is %f, meanRank of valid set is %f" % (best_hit10, meanRank))
+                        bad_counts = 0
+                    else:
+                        print(
+                            "Hit@10 of valid set is %f | bad count is %d"
+                            % (hit10, bad_counts)
+                        )
+                        bad_counts += 1
                 else:
-                    print(
-                        "Hit@10 of valid set is %f | bad count is %d"
-                        % (hit10, bad_counts)
-                    )
-                    bad_counts += 1
+                    if meanRank < best_mrank:
+                        best_hit10 = hit10
+                        best_mrank = meanRank
+                        best_epoch = epoch
+                        best_model = copy.deepcopy(self.trainModel.state_dict())
+                        print("Best model | hit@10 of valid set is %f, meanRank of valid set is %f" % (best_hit10, meanRank))
+                        bad_counts = 0
+                    else:
+                        print(
+                            "meanRank of valid set is %f | bad count is %d"
+                            % (meanRank, bad_counts)
+                        )
+                        bad_counts += 1
                 if bad_counts == self.early_stopping_patience:
                     print("Early stopping at epoch %d" % (epoch))
                     break
